@@ -7,7 +7,7 @@ import mailerConfig from '../../config/config-list/mailer.config';
 @Injectable()
 export class MailerService {
   private readonly logger = new Logger(MailerService.name);
-  private readonly resend
+  private readonly resend;
   constructor(
     @Inject(mailerConfig.KEY)
     private readonly mailerConfigurations: ConfigType<typeof mailerConfig>,
@@ -23,6 +23,6 @@ export class MailerService {
       subject: sendMessage.subject,
       html: sendMessage.html,
     };
-    return await this.resend.emails.send.send(mailBody);
+    return await this.resend.emails.send(mailBody);
   }
 }

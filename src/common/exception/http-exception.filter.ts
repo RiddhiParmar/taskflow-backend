@@ -7,7 +7,6 @@ import {
   Logger,
 } from '@nestjs/common';
 
-
 const ErrorMessage = 'Oops, something went wrong';
 
 @Catch()
@@ -51,10 +50,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     //response to client
     res.status(status).json({
       success: false,
-      message:
-        typeof response === 'string'
-          ? response
-          : response['message'],
+      message: typeof response === 'string' ? response : response['message'],
       code: response['code'] || HttpStatus.INTERNAL_SERVER_ERROR,
       timestamp: new Date().toISOString(),
     });

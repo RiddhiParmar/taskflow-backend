@@ -3,12 +3,12 @@ export const AUTH_ERROR_CONST = {
   AUTH_FAILED_KEY: 'AUTH_FAILED_KEY',
   AUTH_FAILED_INVALID_API_KEY: 'AUTH_FAILED_INVALID_API_KEY',
   AUTH_TOKEN_NOT_VALID_FAILED: 'AUTH_TOKEN_NOT_VALID_FAILED',
-  UNAUTHORIZED_ACCESS:'UNAUTHORIZED_ACCESS'
+  UNAUTHORIZED_ACCESS: 'UNAUTHORIZED_ACCESS',
 };
 export const AUTH_ERROR_MESSAGE = {
   AUTH_FAILED: 'JWT - Auth-Token not set in header',
   AUTH_FAILED_KEY: 'Api key missing in header',
   AUTH_TOKEN_NOT_VALID_FAILED: 'JWT - Auth-Token not valid',
   AUTH_FAILED_INVALID_API_KEY: 'Invalid api key in header',
-  UNAUTHORIZED_ACCESS:'Only admins can Assign tasks.'
+  UNAUTHORIZED_ACCESS: 'You do not have access to perform this action.',
 };

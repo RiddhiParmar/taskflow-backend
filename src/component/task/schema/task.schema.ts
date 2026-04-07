@@ -30,9 +30,10 @@ export class Task {
   @Prop({ type: SchemaTypes.Date })
   dueDate!: Date;
 
-  @Prop({ 
+  @Prop({
     type: SchemaTypes.ObjectId,
-    refPath: [DBCollectionNameTokens.USER], })
+    refPath: [DBCollectionNameTokens.USER],
+  })
   createdBy!: Types.ObjectId | User;
 
   @Prop({ default: false })
@@ -47,6 +48,6 @@ export class Task {
 
 export const TaskSchema = SchemaFactory.createForClass(Task);
 TaskSchema.index({ status: 1 });
-TaskSchema.index({ priority : 1 });
-TaskSchema.index({title:'text', content: 'text'})
+TaskSchema.index({ priority: 1 });
+TaskSchema.index({ title: 'text', content: 'text' });
 TaskSchema.plugin(mongoosePaginate);

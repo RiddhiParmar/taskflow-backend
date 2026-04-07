@@ -6,8 +6,9 @@ import {
   Patch,
   Post,
   Req,
+  UseGuards,
 } from '@nestjs/common';
-import { User } from '../schema/user.schema';
+import { User, UserDocument } from '../schema/user.schema';
 import {
   ApiBearerAuth,
   ApiHeader,
@@ -18,43 +19,26 @@ import { UserService } from '../user.service';
 import { AllPossibleResponses } from '../../../common/swagger/swagger';
 import { RoutePath } from '../../../config';
 import { ILoginResponse } from '../interfaces/user.interface';
-import { CreateUserDto, CreateUserResponseDto, LoginDto } from '../dto/user.create.dto';
-import { ForgetPasswordDto, ResetPasswordDto, SetUserPasswordDto, UpdateUserDto } from '../dto/user.update.dto';
+import {
+  CreateUserDto,
+  CreateUserResponseDto,
+  LoginDto,
+} from '../dto/user.create.dto';
+import {
+  ForgetPasswordDto,
+  ResetPasswordDto,
+  SetUserPasswordDto,
+  UpdateUserDto,
+} from '../dto/user.update.dto';
 import { type CustomRequest } from '../../../common/interface/custom.server.interface';
 import { SuccessMessageDto } from '../../../common/dto/common.dto';
-
+import { AdminGuard } from '../../../common/authentication/admin.guard';
 
 @ApiTags('User')
 @AllPossibleResponses()
 @Controller(RoutePath.USER)
 export class UserController {
-  constructor(
-    private readonly userService: UserService,
-  ) {}
-
-  /**
-   * Create new user
-   * @param {UserDocument} body
-   * @returns {CreateUserResponseDto} User _id
-   */
-  @Post()
-  @ApiOperation({ summary: 'Create new user ' })
-  async createUser(
-    @Body() body: CreateUserDto,
-  ): Promise<CreateUserResponseDto> {
-    return await this.userService.createUser(body);
-  }
-
-  /**
-   * Login user
-   * @param {LoginDto} loginData
-   * @returns {Promise<ILoginResponse>} User data with user access token
-   */
-  @Post('signIn')
-  @ApiOperation({ summary: 'SignIn user ' })
-  async signIn(@Body() loginData: LoginDto): Promise<ILoginResponse> {
-    return await this.userService.signInUser(loginData);
-  }
+  constructor(private readonly userService: UserService) {}
 
   /**
    * Update user profile
@@ -63,7 +47,7 @@ export class UserController {
    * @returns {Promise<User>} Updated user data
    */
   @Patch()
-  @ApiBearerAuth('access-token')
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Update a user profile ' })
   async updateProfile(
     @Req() req: CustomRequest,
@@ -79,7 +63,7 @@ export class UserController {
    * @returns Promise<SuccessMessageDto>
    */
   @Post('/logout')
-  @ApiBearerAuth('access-token')
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Logout the user' })
   async logOut(@Req() req: CustomRequest): Promise<SuccessMessageDto> {
     const user = req.user;
@@ -95,7 +79,7 @@ export class UserController {
    */
   @Post('reset-password')
   @ApiOperation({ summary: 'Reset password  when user know the old one' })
-  @ApiBearerAuth('access-token')
+  @ApiBearerAuth('JWT-auth')
   async resetPassword(
     @Req() req: CustomRequest,
     @Body() resetPasswordData: ResetPasswordDto,
@@ -112,24 +96,23 @@ export class UserController {
    */
   @Get()
   @ApiOperation({ summary: 'Get user data ' })
-  @ApiBearerAuth('access-token')
+  @ApiBearerAuth('JWT-auth')
   async getUser(@Req() req: CustomRequest): Promise<User> {
     const user = req.user;
     return await this.userService.getUserData(user!._id);
   }
 
   /**
-   * Send mail with new reset password token
-   * @param {ForgetPasswordDto}forgetData
-   * @returns Promise<SuccessMessageDto>
+   * Get all user data
+   * @param { CustomRequest } req
+   * @returns {Promise<User>}
    */
-  @Post('/forget-password-token')
-  @ApiOperation({ summary: 'Request Token for forget password reset' })
-  async forgetPassword(
-    @Body() forgetData: ForgetPasswordDto,
-  ): Promise<SuccessMessageDto> {
-    await this.userService.forgetPassword(forgetData.email);
-    return { message: 'Reset password mail sent successfully' };
+  @Get('/all')
+  @UseGuards(AdminGuard) // Only admins can hit this endpoint
+  @ApiOperation({ summary: 'Get all user data ' })
+  @ApiBearerAuth('JWT-auth')
+  async getAllUsers(): Promise<Array<UserDocument> | null> {
+    return await this.userService.getAllUser();
   }
 
   /**
@@ -140,9 +123,14 @@ export class UserController {
    */
   @Post('/forget-reset-password')
   @ApiOperation({ summary: 'Reset forget password' })
-  @ApiBearerAuth('')
+  @ApiHeader({
+    name: 'PasswordResetToken',
+    description: 'Temporary reset password token.',
+    required: true,
+    schema: { type: 'string' },
+  })
   async resetForgetPassword(
-    @Headers('Authorization') passwordResetToken: string,
+    @Headers('PasswordResetToken') passwordResetToken: string,
     @Body() passwordData: SetUserPasswordDto,
   ): Promise<SuccessMessageDto> {
     await this.userService.resetForgetPassword(
@@ -151,5 +139,4 @@ export class UserController {
     );
     return { message: 'User password reset successfully' };
   }
-
 }

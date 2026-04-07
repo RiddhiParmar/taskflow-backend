@@ -2,10 +2,7 @@ import { registerAs } from '@nestjs/config';
 import { ENV_NAMESPACES, NODE_ENV } from '../config.tokens';
 import * as process from 'process';
 
-const redact = [
-  'req.headers.authorization',
-  'req.query.token',
-];
+const redact = ['req.headers.authorization', 'req.query.token'];
 
 const PinoLevelToSeverityLookup = {
   default: 'DEFAULT',
@@ -61,7 +58,7 @@ const PRODUCTION_LOGGER_CONFIGS = {
 };
 
 export default registerAs(ENV_NAMESPACES.LOGGER, () => {
-  if (process.env.NODE_ENV === NODE_ENV.PRODUCTION){
+  if (process.env.NODE_ENV === NODE_ENV.PRODUCTION) {
     return {
       pinoHttp: PRODUCTION_LOGGER_CONFIGS,
     };

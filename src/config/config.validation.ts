@@ -14,7 +14,7 @@ export function validateEnv(config: Record<string, unknown>) {
     throw new Error(`Env variable PRIVATE_KEY is required'`);
   }
 
-    if (!config.RESEND_KEY) {
+  if (!config.RESEND_KEY) {
     throw new Error('Resend api key is required');
   }
 

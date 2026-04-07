@@ -14,7 +14,8 @@ import { TaskModule } from './component/task/task.module';
 import { UserModule } from './component/user/user.module';
 
 @Module({
-  imports: [ // Configure environment variables
+  imports: [
+    // Configure environment variables
     ConfigModule.forRoot({
       isGlobal: true,
       validate: validateEnv,
@@ -23,7 +24,7 @@ import { UserModule } from './component/user/user.module';
         databaseConfig,
         loggerConfig,
         swaggerConfig,
-        mailerConfig
+        mailerConfig,
       ],
     }),
     // Configure logging
@@ -39,9 +40,10 @@ import { UserModule } from './component/user/user.module';
         };
       },
     }),
-  DatabaseModule.forRoot(),
-  UserModule,
-  TaskModule,],
+    DatabaseModule.forRoot(),
+    UserModule,
+    TaskModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

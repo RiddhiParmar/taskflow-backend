@@ -13,7 +13,7 @@ const logger = new Logger('main');
 
 async function bootstrap(): Promise<void> {
   try {
-   const app = await NestFactory.create(AppModule, {
+    const app = await NestFactory.create(AppModule, {
       bufferLogs: true,
     });
 
@@ -32,14 +32,16 @@ async function bootstrap(): Promise<void> {
     app.useGlobalFilters(new GlobalExceptionFilter());
     app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
-    app.use(helmet({
-       contentSecurityPolicy: false,
-       crossOriginEmbedderPolicy: false,
-    }));
+    app.use(
+      helmet({
+        contentSecurityPolicy: false,
+        crossOriginEmbedderPolicy: false,
+      }),
+    );
 
-   app.enableCors(configService.get<number>(`${ENV_NAMESPACES.SERVER}.cors`));
+    app.enableCors(configService.get<number>(`${ENV_NAMESPACES.SERVER}.cors`));
 
-   app.enableShutdownHooks();
+    app.enableShutdownHooks();
 
     // Attach Request ID middleware
     app.use((req: any, res: any, next: () => void) => {
@@ -49,16 +51,18 @@ async function bootstrap(): Promise<void> {
     });
 
     //Start server
-    const port = configService.get<number>(`${ENV_NAMESPACES.SERVER}.port`) ?? 3000;
-    const host = configService.get<string>(`${ENV_NAMESPACES.SERVER}.host`) ?? '0.0.0.0';
+    const port =
+      configService.get<number>(`${ENV_NAMESPACES.SERVER}.port`) ?? 3000;
+    const host =
+      configService.get<string>(`${ENV_NAMESPACES.SERVER}.host`) ?? '0.0.0.0';
 
     await app.listen(port, host);
 
     logger.log(`App running at: ${await app.getUrl()}`);
   } catch (err) {
-    console.log(err)
+    console.log(err);
     logger.error({ err }, `Error in bootstrap() start-up`);
-    process.exit(1);  
+    process.exit(1);
   }
 }
 bootstrap();

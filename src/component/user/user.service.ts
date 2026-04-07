@@ -28,7 +28,6 @@ import {
   LoginDto,
 } from './dto/user.create.dto';
 
-
 @Injectable()
 export class UserService {
   private readonly logger: Logger = new Logger();
@@ -75,32 +74,33 @@ export class UserService {
   async createUser(userData: CreateUserDto): Promise<CreateUserResponseDto> {
     const newUser: CreateUserDto = userData;
 
-    const newPasswordHash = await bcrypt.hash(
-      newUser.password,
-      10,
-    );
+    const newPasswordHash = await bcrypt.hash(newUser.password, 10);
     newUser.password = newPasswordHash;
 
     const user = await this.userRepository.create(newUser).catch((err) => {
       if (err?.cause?.code === 11000) {
-        throw new BadRequestException({
-          code: USER_ERROR_CONST.EMAIL_ALREADY_EXIST,
-          message: USER_ERROR_MESSAGE.EMAIL_ALREADY_EXIST,
-        }, {cause: err});
+        throw new BadRequestException(
+          {
+            code: USER_ERROR_CONST.EMAIL_ALREADY_EXIST,
+            message: USER_ERROR_MESSAGE.EMAIL_ALREADY_EXIST,
+          },
+          { cause: err },
+        );
       }
-      throw err
-      });
+      throw err;
+    });
     this.logger.log(
       { data: { userId: user._id, email: newUser.email } },
       'User created successfully',
     );
-    let userName = user.firstName[0].toUpperCase() + user.firstName.slice(1)
-    const mailContent = await this.mailerTemplateService.welcomeMailTemplate(userName);
+    const userName = user.firstName[0].toUpperCase() + user.firstName.slice(1);
+    const mailContent =
+      await this.mailerTemplateService.welcomeMailTemplate(userName);
     this.mailerService.sendMail({
-        to: user.email,
-        subject: mailContent.subject,
-        html: mailContent.html,
-      })
+      to: user.email,
+      subject: mailContent.subject,
+      html: mailContent.html,
+    });
     return { userId: user._id };
   }
 
@@ -110,13 +110,17 @@ export class UserService {
    * @returns {Promise<ILoginResponse>}
    */
   async generateSessionToken(userId: Types.ObjectId): Promise<ILoginResponse> {
-    const accessToken: string = this.jwtService.createToken({
-      _id: userId,
-    }, this.serverConfigurations.jwtAuthentication.signOptions);
-    const updatedUserData: User|null = await this.userRepository.findOneAndUpdate(
-      { _id: userId },
-      { $push: { tokens: accessToken } },
+    const accessToken: string = this.jwtService.createToken(
+      {
+        _id: userId,
+      },
+      this.serverConfigurations.jwtAuthentication.signOptions,
     );
+    const updatedUserData: User | null =
+      await this.userRepository.findOneAndUpdate(
+        { _id: userId },
+        { $push: { tokens: accessToken } },
+      );
     return { accessToken, ...updatedUserData };
   }
 
@@ -126,10 +130,7 @@ export class UserService {
    * @returns Promise<ILoginResponse>
    */
   async signInUser(userData: LoginDto): Promise<ILoginResponse> {
-    const user = await this.getUser(
-      { email: userData.email },
-      { password: 1 },
-    );
+    const user = await this.getUser({ email: userData.email }, { password: 1 });
 
     const isMatch = await bcrypt.compare(userData.password, user.password);
 
@@ -157,24 +158,24 @@ export class UserService {
    * @param {User} userUpdates
    * @returns Promise<User>
    */
-  async updateUser(
-    user,
-    userUpdates: UpdateUserDto,
-  ): Promise<User> {
+  async updateUser(user, userUpdates: UpdateUserDto): Promise<User> {
     const query: Record<string, any> = userUpdates;
 
     const userData = await this.userRepository.findOneAndUpdate(
       { _id: user._id },
       { $set: query },
     );
-    if(!userData){
-      this.logger.error({ data: { id: user._id} }, 'User not found with this query');
+    if (!userData) {
+      this.logger.error(
+        { data: { id: user._id } },
+        'User not found with this query',
+      );
       throw new NotFoundException({
         code: USER_ERROR_CONST.USER_NOT_FOUND,
         message: USER_ERROR_MESSAGE.USER_NOT_FOUND,
       });
     }
-    
+
     this.logger.log(
       { data: { userId: user._id, email: userData?.email } },
       'User updated successfully',
@@ -267,13 +268,21 @@ export class UserService {
   }
 
   /**
+   * Return the user Data
+   * @param {string| Types.ObjectId} userId
+   * @returns {Promise<User>}
+   */
+  async getAllUser(): Promise<Array<UserDocument> | null> {
+    return this.userRepository.find({ isArchived: false });
+  }
+  /**
    * Generate token for reset password and send the mail
    * @param {string} email
    * @returns{Promise<void>}
    */
   async forgetPassword(email: string): Promise<void> {
     const user = await this.getUser({ email });
-    
+
     const accessToken: string = this.jwtService.createToken(
       {
         id: user._id,
@@ -281,7 +290,8 @@ export class UserService {
       this.serverConfigurations.jwtAuthentication.signOptionsForForgetPassword,
     );
     const mailContent = await this.mailerTemplateService.forgetMailTemplate({
-      resetPasswordUrl: `${this.serverConfigurations.frontendBaseUrl}/reset-password?token=${accessToken}`,    });
+      resetPasswordUrl: `${this.serverConfigurations.frontendBaseUrl}/reset-password?token=${accessToken}`,
+    });
     await Promise.all([
       this.userRepository.findOneAndUpdate(
         { _id: user._id },
@@ -313,6 +323,7 @@ export class UserService {
     resetPasswordToken: string,
     passwordData: SetUserPasswordDto,
   ): Promise<void> {
+    console.log('resetPasswordToken', resetPasswordToken);
     let decode;
     try {
       decode = await this.jwtService.verifyToken(resetPasswordToken);
@@ -359,5 +370,4 @@ export class UserService {
       'Forget password reset successfully',
     );
   }
-
 }

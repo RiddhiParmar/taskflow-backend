@@ -1,6 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, type PaginateModel } from 'mongoose';
+import { Model, type PaginateModel, type PipelineStage } from 'mongoose';
 import { SchemaRepository } from '../../common/database/schema.repository';
 import { Task, TaskDocument } from './schema/task.schema';
 import { DATABASE_ERROR_CODES } from '../../common/database/database.errors';
@@ -23,10 +23,13 @@ export class TaskRepository extends SchemaRepository<TaskDocument> {
         paginationOption,
       );
     } catch (err) {
-      throw new InternalServerErrorException({
-        code: 'GET_DATA',
-        message: DATABASE_ERROR_CODES.GET_DATA,
-      }, { cause: err });
+      throw new InternalServerErrorException(
+        {
+          code: 'GET_DATA',
+          message: DATABASE_ERROR_CODES.GET_DATA,
+        },
+        { cause: err },
+      );
     }
   }
 
@@ -34,11 +37,27 @@ export class TaskRepository extends SchemaRepository<TaskDocument> {
     try {
       return await this.taskModel.countDocuments(entityFilterQuery);
     } catch (err) {
-      throw new InternalServerErrorException({
-        code: 'GET_DATA',
-        message: DATABASE_ERROR_CODES.GET_DATA,
-      }, { cause: err });
+      throw new InternalServerErrorException(
+        {
+          code: 'GET_DATA',
+          message: DATABASE_ERROR_CODES.GET_DATA,
+        },
+        { cause: err },
+      );
     }
   }
 
+  async aggregateTask(pipeline: PipelineStage[]) {
+    try {
+      return await this.taskModel.aggregate(pipeline);
+    } catch (err) {
+      throw new InternalServerErrorException(
+        {
+          code: 'GET_DATA',
+          message: DATABASE_ERROR_CODES.GET_DATA,
+        },
+        { cause: err },
+      );
+    }
+  }
 }

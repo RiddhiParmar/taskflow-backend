@@ -14,31 +14,26 @@ import { RouteInfo } from '@nestjs/common/interfaces';
 import { JwtAuthModule } from '../../common/jwt/jwt.module';
 import { AuthenticationMiddleware } from '../../common/authentication/authentication.middleware';
 import { MailerModule } from '../../common/mailer/mailer.module';
+import { UserAuthController } from './controller/userauth.controller';
 
 const excludeUserRoute: Array<string | RouteInfo> = [
   {
-    path: '/task/:userId',
+    path: '/user/auth',
     method: RequestMethod.POST,
   },
-  '/user/signIn',
-  '/user/forget-password-token',
+  '/user/auth/login',
+  '/user/auth/forget-password-token',
   '/user/forget-reset-password',
 ];
 
-
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: User.name, schema: UserSchema },
-    ]),
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     JwtAuthModule,
     MailerModule,
   ],
-  controllers: [UserController],
-  providers: [
-    UserService,
-    UserRepository,
-  ],
+  controllers: [UserAuthController, UserController],
+  providers: [UserService, UserRepository],
   exports: [UserRepository],
 })
 export class UserModule implements NestModule {

@@ -1,10 +1,4 @@
-import {
-  ApiBearerAuth,
-  ApiBody,
-  ApiHeader,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AllPossibleResponses } from '../../common/swagger/swagger';
 import {
   Body,
@@ -20,22 +14,19 @@ import {
 } from '@nestjs/common';
 import { RoutePath } from '../../config';
 import { TaskService } from './task.service';
-import {
-  CreateTaskDto,
-  CreateTaskResponseDto,
-} from './dto/task.create.dto';
+import { CreateTaskDto, CreateTaskResponseDto } from './dto/task.create.dto';
 import {
   GetPaginatedTaskParamDto,
+  GetPaginatedTaskResponseDto,
 } from './dto/task.get.dto';
 import { ObjectIdValidationPipe } from '../../common/pipes/object-validation.pipe';
 import { SuccessMessageDto } from '../../common/dto/common.dto';
 import { type CustomRequest } from '../../common/interface/custom.server.interface';
 import { AdminGuard } from '../../common/authentication/admin.guard';
-import { UpdateTaskDto, UpdateTaskStatusDto } from './dto/task.update.dto';
-import { Types } from 'mongoose';
+import { AssignTaskDto, UpdateTaskStatusDto } from './dto/task.update.dto';
 
 @ApiTags('Task')
-@ApiBearerAuth('access-token')
+@ApiBearerAuth('JWT-auth')
 @AllPossibleResponses()
 @Controller(RoutePath.TASK)
 export class TaskController {
@@ -56,7 +47,7 @@ export class TaskController {
     @Req() req: CustomRequest,
     @Body() createTaskDto: CreateTaskDto,
   ): Promise<CreateTaskResponseDto> {
-    const user = req.user
+    const user = req.user;
     return await this.taskService.createTask(user, createTaskDto);
   }
 
@@ -76,22 +67,21 @@ export class TaskController {
     return { message: 'task updated successfully' };
   }
 
-  // /**
-  //  * Get task paginated data
-  //  * @param {TaskStatus} status
-  //  * @param {CustomRequest} req
-  //  * @param {GetPaginatedTaskParamDto} queryParam
-  //  * @returns Promise<Array<Task>>
-  //  */
-  // @Get('/')
-  // @ApiOperation({ summary: 'Get task data with pagination' })
-  // async getPaginatedTask(
-  //   @Req() req: CustomRequest,
-  //   @Query() queryParam: GetPaginatedTaskParamDto,
-  // ) {
-  //   const user = req.user;
-  //   return await this.taskService.getPaginatedTask(user, queryParam);
-  // }
+  /**
+   * Get task paginated data
+   * @param {CustomRequest} req
+   * @param {GetPaginatedTaskParamDto} queryParam
+   * @returns Promise<Array<Task>>
+   */
+  @Get('/')
+  @ApiOperation({ summary: 'Get task data with pagination' })
+  async getPaginatedTask(
+    @Req() req: CustomRequest,
+    @Query() queryParam: GetPaginatedTaskParamDto,
+  ): Promise<GetPaginatedTaskResponseDto> {
+    const user = req.user;
+    return await this.taskService.getPaginatedTask(user, queryParam);
+  }
 
   /**
    * delete task for user
@@ -115,8 +105,9 @@ export class TaskController {
   @Patch(':id/reassign')
   @UseGuards(AdminGuard) // Only admins can hit this endpoint
   reassign(
-    @Param('id', ObjectIdValidationPipe) taskId: Types.ObjectId, 
-    @Body('userId', ObjectIdValidationPipe) userId: Types.ObjectId) {
-    return this.taskService.assigneTask(taskId, userId);
+    @Param('id', ObjectIdValidationPipe) taskId: string,
+    @Body() body: AssignTaskDto,
+  ) {
+    return this.taskService.assigneTask(taskId, body);
   }
 }

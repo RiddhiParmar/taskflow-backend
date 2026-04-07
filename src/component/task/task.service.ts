@@ -1,10 +1,4 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import {
   CreateTaskDBDto,
   CreateTaskDto,
@@ -14,14 +8,15 @@ import { TaskRepository } from './task.repository';
 import { TaskDocument } from './schema/task.schema';
 import { Types } from 'mongoose';
 import { type ConfigType } from '@nestjs/config';
-import {
-  GetPaginatedTaskParamDto,
-} from './dto/task.get.dto';
 import serverConfig from '../../config/config-list/server.config';
 import { TASK_ERROR_CONST, TASK_ERROR_MESSAGE } from './task.errors';
-import { User, UserDocument } from '../user/schema/user.schema';
-import { UpdateTaskDto, UpdateTaskStatusDto } from './dto/task.update.dto';
+import { AssignTaskDto, UpdateTaskStatusDto } from './dto/task.update.dto';
 import { TaskStatus } from './enum/task.enum';
+import {
+  GetPaginatedTaskParamDto,
+  GetPaginatedTaskResponseDto,
+} from './dto/task.get.dto';
+import { CustomRequest } from '../../common/interface/custom.server.interface';
 
 @Injectable()
 export class TaskService {
@@ -33,7 +28,6 @@ export class TaskService {
     private readonly taskRepository: TaskRepository,
   ) {}
 
-
   /**
    * Create task
    * @param {User & Document} user
@@ -44,8 +38,7 @@ export class TaskService {
     user,
     taskData: CreateTaskDto,
   ): Promise<CreateTaskResponseDto> {
-
-   if (user.role !== 'admin' || !taskData.assignedTo) {
+    if (user.role !== 'admin' || !taskData.assignedTo) {
       taskData.assignedTo = user._id;
     }
     const newTaskData: CreateTaskDBDto = {
@@ -67,10 +60,11 @@ export class TaskService {
    * @param {string} taskId
    * @param {UpdateTaskDto} taskData
    */
-  async updateTask(taskId: string, taskData: UpdateTaskStatusDto): Promise<void> {
-    if (
-      [TaskStatus.COMPLETED].includes(taskData.status)
-    ) {
+  async updateTask(
+    taskId: string,
+    taskData: UpdateTaskStatusDto,
+  ): Promise<void> {
+    if ([TaskStatus.COMPLETED].includes(taskData.status)) {
       taskData.completedAt = new Date();
     }
     const updatedTask: TaskDocument | null =
@@ -92,11 +86,11 @@ export class TaskService {
    * @param {string} taskId
    * @param {UpdateTaskDto} taskData
    */
-  async assigneTask(taskId: Types.ObjectId, userId: Types.ObjectId): Promise<void> {
+  async assigneTask(taskId: string, body: AssignTaskDto): Promise<void> {
     const updatedTask: TaskDocument | null =
       await this.taskRepository.findOneAndUpdate(
         { _id: taskId },
-        { $set: {assignedTo: userId} },
+        { $set: { assignedTo: body.assignedTo } },
       );
     if (!updatedTask) {
       throw new NotFoundException({
@@ -107,77 +101,122 @@ export class TaskService {
     this.logger.log({ data: { taskId } }, 'Task Updated Successfully ');
   }
 
-  // /**
-  //  * Return the paginated  for task
-  //  * @param {TaskStatus} status
-  //  * @param {LeanDocument<UserDocument>} user
-  //  * @param {GetPaginatedTaskParamDto} filterOptions
-  //  */
-  // async getPaginatedTask(
-  //   status: TaskStatus,
-  //   user: LeanDocument<UserDocument>,
-  //   filterOptions: GetPaginatedTaskParamDto,
-  // ) {
-  //   await this.validateAssociation(user);
-  //   const query: Record<string, any> = {
-  //     userId: user._id,
-  //     status,
-  //     isArchived: false,
-  //   };
-  //   if (status === TaskStatus.COMPLETED) {
-  //     query.status = { $in: [TaskStatus.COMPLETED, TaskStatus.TO_PROCESS] };
-  //   }
+  /**
+   * Return the paginated  for task
+   * @param {TaskStatus} status
+   * @param {LeanDocument<UserDocument>} user
+   * @param {GetPaginatedTaskParamDto} filterOptions
+   */
+  async getPaginatedTask(
+    user: CustomRequest['user'],
+    query: GetPaginatedTaskParamDto,
+  ): Promise<GetPaginatedTaskResponseDto> {
+    const filter: Record<string, any> = {};
 
-  //   if (filterOptions.type) {
-  //     query.type = filterOptions.type;
-  //   }
-  //   const promiseArray = [];
-  //   promiseArray.push(
-  //     this.taskRepository.paginateTask(query, {
-  //       limit: filterOptions.limit,
-  //       page: filterOptions.page,
-  //       sort: {
-  //         updatedAt: 'desc',
-  //       },
-  //       select: {
-  //         eSign: 1,
-  //         checkList: 1,
-  //         status: 1,
-  //         completedAt: 1,
-  //         type: 1,
-  //         firmId: 1,
-  //       },
-  //     }),
-  //   );
-  //   promiseArray.push(
-  //     this.firmSettingsRepository.findOne(
-  //       {
-  //         firmId: user.firmId,
-  //       },
-  //       {
-  //         taskSettings: 1,
-  //         firmId: 1,
-  //       },
-  //     ),
-  //   );
+    if (query.status) {
+      filter.status = query.status;
+    }
 
-  //   const [taskData, firmSettings] = await Promise.all(promiseArray);
-  //   const paginatedData = JSON.parse(JSON.stringify(taskData));
-  //   paginatedData.docs = paginatedData.docs.map((task: KamigoSettings) => {
-  //     if (!firmSettings.taskSettings[task.type][user.language]) {
-  //       user.language = Language.ENGLISH;
-  //     }
-  //     const taskSettings = firmSettings.taskSettings[task.type];
-  //     if (!taskSettings || !taskSettings[user.language]) {
-  //       throw new Error(
-  //         `Task settings not found for task type '${task.type}' and language '${user.language}'`,
-  //       );
-  //     }
-  //     task.kamigoSettings = firmSettings.taskSettings[task.type][user.language];
-  //     return task;
-  //   });
-  //   return paginatedData;
-  // }c
+    if (query.priority) {
+      filter.priority = query.priority;
+    }
+
+    if (user?.role === 'admin' && query.assignedTo) {
+      filter.assignedTo = new Types.ObjectId(query.assignedTo);
+    } else {
+      filter.assignedTo = new Types.ObjectId(user?._id);
+    }
+
+    // tasks created by the current user
+    if (user?.role !== 'admin') {
+      filter.createdBy = new Types.ObjectId(user?._id);
+    }
+
+    const sortField = query.sortBy || 'dueDate';
+    const sortOrder = query.sortOrder === 'desc' ? -1 : 1;
+
+    const page = query.page || 1;
+    const limit = query.limit || 10;
+    const skip = (page - 1) * limit;
+
+    const [result] = await this.taskRepository.aggregateTask([
+      { $match: filter },
+      {
+        $facet: {
+          data: [
+            { $sort: { [sortField]: sortOrder } },
+            { $skip: skip },
+            { $limit: limit },
+            {
+              $lookup: {
+                from: 'users',
+                localField: 'assignedTo',
+                foreignField: '_id',
+                as: 'assignedToUser',
+                pipeline: [{ $project: { firstName: 1, lastName: 1 } }],
+              },
+            },
+            {
+              $lookup: {
+                from: 'users',
+                localField: 'createdBy',
+                foreignField: '_id',
+                as: 'createdByUser',
+                pipeline: [{ $project: { firstName: 1, lastName: 1 } }],
+              },
+            },
+            {
+              $addFields: {
+                assignedToUser: { $arrayElemAt: ['$assignedToUser', 0] },
+                createdByUser: { $arrayElemAt: ['$createdByUser', 0] },
+              },
+            },
+            {
+              $addFields: {
+                assignedToUser: {
+                  name: {
+                    $trim: {
+                      input: {
+                        $concat: [
+                          { $ifNull: ['$assignedToUser.firstName', ''] },
+                          ' ',
+                          { $ifNull: ['$assignedToUser.lastName', ''] },
+                        ],
+                      },
+                    },
+                  },
+                },
+                createdByUser: {
+                  name: {
+                    $trim: {
+                      input: {
+                        $concat: [
+                          { $ifNull: ['$createdByUser.firstName', ''] },
+                          ' ',
+                          { $ifNull: ['$createdByUser.lastName', ''] },
+                        ],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          ],
+          metadata: [{ $count: 'total' }],
+        },
+      },
+    ]);
+
+    const data = result?.data || [];
+    const total = result?.metadata?.[0]?.total || 0;
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
 
   /**
    * Archived the tasks

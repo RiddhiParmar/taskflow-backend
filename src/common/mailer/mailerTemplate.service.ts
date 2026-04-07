@@ -4,10 +4,7 @@ import { mailerTemplateDto } from './mailer.dto';
 @Injectable()
 export class MailerTemplateService {
   constructor() {}
-  async forgetMailTemplate({
-    resetPasswordUrl,
-  }): Promise<mailerTemplateDto> {
-
+  async forgetMailTemplate({ resetPasswordUrl }): Promise<mailerTemplateDto> {
     const html = `<!DOCTYPE html>
 <html>
 <head>
@@ -58,21 +55,16 @@ export class MailerTemplateService {
 </body>
 </html>`;
 
-    return { html, subject: "Forget Password" };
+    return { html, subject: 'Forget Password' };
   }
 
-    async welcomeMailTemplate(name:string): Promise<mailerTemplateDto> {
-
+  async welcomeMailTemplate(name: string): Promise<mailerTemplateDto> {
     const html = `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px;">
   <h2 style="color: #333;">Welcome to the Team, ${name}! 🚀</h2>
   <p>We're excited to help you get organized. Your account is now active and ready for your first task.</p>
-  
-  <div style="text-align: center; margin: 30px 0;">
-    <a href="{{actionUrl}}" 
-       style="background-color: #4CAF50; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-       Create Your First Task
-    </a>
-  </div>
+  <p style="margin: 20px 0; color: #444;">
+    You can now log in and start creating and tracking your tasks.
+  </p>
 
   <p style="font-size: 14px; color: #666;">
     If you have any questions, just reply to this email. We're here to help!
@@ -81,7 +73,6 @@ export class MailerTemplateService {
   <p style="font-size: 12px; color: #999;">Sent via TaskManager Pro Mailing Service</p>
 </div>`;
 
-    return { html, subject: "Welcome to Taskflow 🚀" };
+    return { html, subject: 'Welcome to Taskflow 🚀' };
   }
-
 }

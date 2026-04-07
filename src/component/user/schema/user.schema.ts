@@ -6,8 +6,7 @@ export type UserDocument = User & Document;
 
 @Schema({ timestamps: true })
 export class User {
-
-  _id!: Types.ObjectId
+  _id!: Types.ObjectId;
 
   @Prop({ required: true })
   firstName!: string;
@@ -15,14 +14,19 @@ export class User {
   @Prop({ required: true })
   lastName!: string;
 
-  @Prop({ required: true, lowercase: true, trim: true})
+  @Prop({ required: true, lowercase: true, trim: true })
   email!: string;
 
   @Prop({ required: false, select: false })
   password?: string;
 
-  @Prop({required:true, enum: UserRole, default:UserRole.USER})
-  role!: UserRole
+  @Prop({
+    required: true,
+    enum: UserRole,
+    default: UserRole.USER,
+    type: String,
+  })
+  role!: UserRole;
 
   @Prop({ select: false })
   tokens?: string[];

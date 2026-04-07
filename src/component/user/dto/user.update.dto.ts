@@ -78,6 +78,3 @@ export class ForgetPasswordDto {
   @IsEmail()
   email!: string;
 }
-
-  
-

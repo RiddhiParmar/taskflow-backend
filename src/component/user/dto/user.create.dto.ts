@@ -1,6 +1,8 @@
 import {
   IsEmail,
+  IsEnum,
   IsNotEmpty,
+  IsOptional,
   IsString,
   Matches,
   MaxLength,
@@ -9,6 +11,7 @@ import {
 import { Types } from 'mongoose';
 import { Transform } from 'class-transformer';
 import { toLowerCase } from '../../../common/transformer/transformer';
+import { UserRole } from '../enum/user.enum';
 
 export class CreateUserDto {
   @IsNotEmpty({
@@ -28,25 +31,24 @@ export class CreateUserDto {
   })
   @IsEmail()
   @Transform(({ value }) => toLowerCase(value))
-  email!:string;
+  email!: string;
 
-  @IsNotEmpty({
-    message: 'Role not assigned',
-  })
+  @IsOptional()
+  @IsEnum(UserRole)
+  role?: UserRole;
 
   @MinLength(8, {
-      message: 'password must be a 8 characters log',
-    })
+    message: 'password must be a 8 characters log',
+  })
   @MaxLength(128, {
-      message: 'password not be 128 characters long',
-    })
+    message: 'password not be 128 characters long',
+  })
   @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
-      message:
-        'password should be a combination of uppercase, lowercase, number and special character',
-    })
+    message:
+      'password should be a combination of uppercase, lowercase, number and special character',
+  })
   @IsString()
-  password!:string;
-
+  password!: string;
 }
 
 export class CreateUserResponseDto {
@@ -64,4 +66,3 @@ export class LoginDto {
   @IsEmail()
   email!: string;
 }
-

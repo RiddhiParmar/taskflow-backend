@@ -6,15 +6,15 @@ import { User } from '../../component/user/schema/user.schema';
 // In Express, we don't need 'Auth' vs 'Custom' splits like Fastify's .raw
 export interface CustomRequest extends Request {
   // Use LeanDocument if you are using .lean() in your auth service
-  user?: Document & User; 
+  user?: Document & User;
 }
 
 // 2. Custom Response Interface
 export interface CustomResponse extends Response {
   /**
    * Custom Response generator
-   * @param statusCode 
-   * @param data 
+   * @param statusCode
+   * @param data
    */
   sendResponse(statusCode: number, data?: any): void;
 }

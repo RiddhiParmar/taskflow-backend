@@ -3,9 +3,10 @@ import { Types } from 'mongoose';
 import { PIPE_ERROR_CONST, PIPE_ERROR_MESSAGE } from './pipes.errors';
 
 @Injectable()
-export class ObjectIdValidationPipe
-implements PipeTransform<string, Types.ObjectId>
-{
+export class ObjectIdValidationPipe implements PipeTransform<
+  string,
+  Types.ObjectId
+> {
   transform(value: string): Types.ObjectId {
     const isValidObjectId = Types.ObjectId.isValid(value);
     if (!isValidObjectId) {

@@ -20,7 +20,7 @@ import { MailerModule } from '../../common/mailer/mailer.module';
     MongooseModule.forFeature([{ name: Task.name, schema: TaskSchema }]),
     JwtAuthModule,
     MailerModule,
-    UserModule
+    UserModule,
   ],
   controllers: [TaskController],
   providers: [TaskService, TaskRepository],
@@ -28,8 +28,6 @@ import { MailerModule } from '../../common/mailer/mailer.module';
 })
 export class TaskModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
-    consumer
-      .apply(AuthenticationMiddleware)
-      .forRoutes(TaskController);
+    consumer.apply(AuthenticationMiddleware).forRoutes(TaskController);
   }
 }
