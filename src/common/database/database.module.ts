@@ -7,7 +7,9 @@ import { ENV_NAMESPACES } from '../../config';
 export default class DatabaseModule {
   private static readonly logger: Logger = new Logger();
 
-  public static getNoSqlConnectionString(config: ConfigService): string|undefined {
+  public static getNoSqlConnectionString(
+    config: ConfigService,
+  ): string | undefined {
     const connectionURL = config.get<string>(`${ENV_NAMESPACES.DATABASE}.uri`);
     if (!connectionURL) {
       this.logger.error('Invalid DB URL');

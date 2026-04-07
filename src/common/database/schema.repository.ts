@@ -1,4 +1,4 @@
-import { Document,Model, QueryFilter, UpdateQuery } from 'mongoose';
+import { Document, Model, QueryFilter, UpdateQuery } from 'mongoose';
 import { InternalServerErrorException } from '@nestjs/common';
 import { DATABASE_ERROR_CODES } from './database.errors';
 
@@ -14,10 +14,13 @@ export abstract class SchemaRepository<T extends Document> {
         .findOne({ isArchived: false, ...entityFilterQuery }, projection)
         .lean();
     } catch (err) {
-      throw new InternalServerErrorException({
-        code: 'GET_DATA',
-        message: DATABASE_ERROR_CODES.GET_DATA,
-      }, {cause: err});
+      throw new InternalServerErrorException(
+        {
+          code: 'GET_DATA',
+          message: DATABASE_ERROR_CODES.GET_DATA,
+        },
+        { cause: err },
+      );
     }
   }
 
@@ -25,10 +28,13 @@ export abstract class SchemaRepository<T extends Document> {
     try {
       return await this.schemaModel.find(entityFilterQuery);
     } catch (err) {
-      throw new InternalServerErrorException({
-        code: 'GET_DATA',
-        message: DATABASE_ERROR_CODES.GET_DATA,
-      }, {cause: err});
+      throw new InternalServerErrorException(
+        {
+          code: 'GET_DATA',
+          message: DATABASE_ERROR_CODES.GET_DATA,
+        },
+        { cause: err },
+      );
     }
   }
 
@@ -36,10 +42,13 @@ export abstract class SchemaRepository<T extends Document> {
     try {
       return await this.schemaModel.create(createEntityData);
     } catch (err) {
-      throw new InternalServerErrorException({
-        code: 'CREATE_RESOURCE',
-        message: DATABASE_ERROR_CODES.CREATE_DATA,
-      }, {cause: err});
+      throw new InternalServerErrorException(
+        {
+          code: 'CREATE_RESOURCE',
+          message: DATABASE_ERROR_CODES.CREATE_DATA,
+        },
+        { cause: err },
+      );
     }
   }
 
@@ -59,10 +68,13 @@ export abstract class SchemaRepository<T extends Document> {
         )
         .lean();
     } catch (err) {
-      throw new InternalServerErrorException({
-        code: 'UPDATE_RESOURCE',
-        message: DATABASE_ERROR_CODES.UPDATE_DATA,
-      }, {cause: err});
+      throw new InternalServerErrorException(
+        {
+          code: 'UPDATE_RESOURCE',
+          message: DATABASE_ERROR_CODES.UPDATE_DATA,
+        },
+        { cause: err },
+      );
     }
   }
 
@@ -76,22 +88,27 @@ export abstract class SchemaRepository<T extends Document> {
         updateEntityData,
       );
     } catch (err) {
-      throw new InternalServerErrorException({
-        code: 'UPDATE_RESOURCE',
-        message: DATABASE_ERROR_CODES.UPDATE_DATA,
-      }, {cause: err});
+      throw new InternalServerErrorException(
+        {
+          code: 'UPDATE_RESOURCE',
+          message: DATABASE_ERROR_CODES.UPDATE_DATA,
+        },
+        { cause: err },
+      );
     }
   }
 
-
-  async findOneAndDelete(entityFilterQuery: QueryFilter<T>): Promise<T| null> {
+  async findOneAndDelete(entityFilterQuery: QueryFilter<T>): Promise<T | null> {
     try {
       return await this.schemaModel.findOneAndDelete(entityFilterQuery);
     } catch (err) {
-      throw new InternalServerErrorException({
-        code: 'DELETE_RESOURCE',
-        message: DATABASE_ERROR_CODES.DELETE_DATA,
-      }, {cause: err});
+      throw new InternalServerErrorException(
+        {
+          code: 'DELETE_RESOURCE',
+          message: DATABASE_ERROR_CODES.DELETE_DATA,
+        },
+        { cause: err },
+      );
     }
   }
 
@@ -99,11 +116,13 @@ export abstract class SchemaRepository<T extends Document> {
     try {
       await this.schemaModel.deleteMany(entityFilterQuery);
     } catch (err) {
-      throw new InternalServerErrorException({
-        code: 'DELETE_RESOURCE',
-        message: DATABASE_ERROR_CODES.DELETE_DATA,
-      },
-       {cause: err});
+      throw new InternalServerErrorException(
+        {
+          code: 'DELETE_RESOURCE',
+          message: DATABASE_ERROR_CODES.DELETE_DATA,
+        },
+        { cause: err },
+      );
     }
   }
 }

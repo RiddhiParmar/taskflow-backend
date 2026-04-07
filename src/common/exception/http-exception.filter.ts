@@ -7,7 +7,6 @@ import {
   Logger,
 } from '@nestjs/common';
 
-
 const ErrorMessage = 'Oops, something went wrong';
 
 @Catch()
@@ -34,17 +33,24 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     // Log the error with stack trace
     this.logger.error(
-      `Error on ${req.method} ${req.url}`,
-      originalError?.stack || exception.stack,
+      {
+        status,
+        // Error code i.e. 'USER_NOT_FOUND'
+        code: exception?.code,
+        path: req.url,
+        traceId: req.id,
+        // extra fields
+        meta: exception?.meta || exception?.response,
+        // Error object if error was thrown
+        err: exception.err || exception,
+      },
+      exception?.message,
     );
 
     //response to client
     res.status(status).json({
       success: false,
-      message:
-        typeof response === 'string'
-          ? response
-          : response['message'],
+      message: typeof response === 'string' ? response : response['message'],
       code: response['code'] || HttpStatus.INTERNAL_SERVER_ERROR,
       timestamp: new Date().toISOString(),
     });

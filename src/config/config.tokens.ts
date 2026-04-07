@@ -4,8 +4,8 @@ export enum ENV_NAMESPACES {
   LOGGER = 'logger',
   SERVER = 'server',
   SWAGGER = 'swagger',
+  MAILER = 'mailer',
 }
-
 
 /** Use this for giving reference to the collection name in Schema */
 // Values will be the name of collection from DB
@@ -17,6 +17,7 @@ export enum DBCollectionNameTokens {
 /** These are the names of the name of route base path */
 
 export enum RoutePath {
+  USER_AUTH = 'user/auth',
   USER = 'user',
   TASK = 'task',
 }
