@@ -112,6 +112,7 @@ export class TaskService {
     query: GetPaginatedTaskParamDto,
   ): Promise<GetPaginatedTaskResponseDto> {
     const filter: Record<string, any> = {};
+    filter.isArchived = false;
 
     if (query.status) {
       filter.status = query.status;
@@ -121,8 +122,10 @@ export class TaskService {
       filter.priority = query.priority;
     }
 
-    if (user?.role === 'admin' && query.assignedTo) {
-      filter.assignedTo = new Types.ObjectId(query.assignedTo);
+    if (user?.role === 'admin') {
+      if(query.assignedTo) {
+          filter.assignedTo = new Types.ObjectId(query.assignedTo);
+      }
     } else {
       filter.assignedTo = new Types.ObjectId(user?._id);
     }
