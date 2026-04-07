@@ -33,10 +33,6 @@ export class CreateUserDto {
   @Transform(({ value }) => toLowerCase(value))
   email!: string;
 
-  @IsOptional()
-  @IsEnum(UserRole)
-  role?: UserRole;
-
   @MinLength(8, {
     message: 'password must be a 8 characters log',
   })
