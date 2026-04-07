@@ -14,7 +14,6 @@ export function swagger(app: INestApplication, config: ConfigService): void {
     .setTitle(config.get(`${ENV_NAMESPACES.SWAGGER}.title`)!)
     .setDescription(config.get(`${ENV_NAMESPACES.SWAGGER}.description`)!)
     .setVersion(config.get(`${ENV_NAMESPACES.SWAGGER}.version`)!)
-    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup(

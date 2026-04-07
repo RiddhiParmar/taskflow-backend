@@ -34,8 +34,18 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     // Log the error with stack trace
     this.logger.error(
-      `Error on ${req.method} ${req.url}`,
-      originalError?.stack || exception.stack,
+      {
+        status,
+        // Error code i.e. 'USER_NOT_FOUND'
+        code: exception?.code,
+        path: req.url,
+        traceId: req.id,
+        // extra fields
+        meta: exception?.meta || exception?.response,
+        // Error object if error was thrown
+        err: exception.err || exception,
+      },
+      exception?.message,
     );
 
     //response to client

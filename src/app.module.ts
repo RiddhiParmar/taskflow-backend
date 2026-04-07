@@ -9,6 +9,9 @@ import databaseConfig from './config/config-list/database.config';
 import loggerConfig from './config/config-list/logger.config';
 import serverConfig from './config/config-list/server.config';
 import swaggerConfig from './config/config-list/swagger.config';
+import mailerConfig from './config/config-list/mailer.config';
+import { TaskModule } from './component/task/task.module';
+import { UserModule } from './component/user/user.module';
 
 @Module({
   imports: [ // Configure environment variables
@@ -20,6 +23,7 @@ import swaggerConfig from './config/config-list/swagger.config';
         databaseConfig,
         loggerConfig,
         swaggerConfig,
+        mailerConfig
       ],
     }),
     // Configure logging
@@ -35,7 +39,9 @@ import swaggerConfig from './config/config-list/swagger.config';
         };
       },
     }),
-  DatabaseModule.forRoot(),],
+  DatabaseModule.forRoot(),
+  UserModule,
+  TaskModule,],
   controllers: [AppController],
   providers: [AppService],
 })

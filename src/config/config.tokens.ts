@@ -4,6 +4,7 @@ export enum ENV_NAMESPACES {
   LOGGER = 'logger',
   SERVER = 'server',
   SWAGGER = 'swagger',
+  MAILER = 'mailer'
 }
 
 

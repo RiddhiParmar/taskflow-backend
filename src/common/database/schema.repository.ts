@@ -8,7 +8,7 @@ export abstract class SchemaRepository<T extends Document> {
   async findOne(
     entityFilterQuery: QueryFilter<T>,
     projection?: Record<string, unknown>,
-  ): Promise<T | null> {
+  ): Promise<T| null> {
     try {
       return await this.schemaModel
         .findOne({ isArchived: false, ...entityFilterQuery }, projection)
