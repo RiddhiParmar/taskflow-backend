@@ -113,6 +113,7 @@ export class TaskService {
   ): Promise<GetPaginatedTaskResponseDto> {
     const filter: Record<string, any> = {};
     filter.isArchived = false;
+    const userId = user?._id ? new Types.ObjectId(user._id) : undefined;
 
     if (query.status) {
       filter.status = query.status;
@@ -123,24 +124,46 @@ export class TaskService {
     }
 
     if (user?.role === 'admin') {
-      if(query.assignedTo) {
-          filter.assignedTo = new Types.ObjectId(query.assignedTo);
+      if (query.assignedTo) {
+        filter.assignedTo = new Types.ObjectId(query.assignedTo);
       }
-    } else {
-      filter.assignedTo = new Types.ObjectId(user?._id);
+
+      if (query.createdBy) {
+        filter.createdBy = new Types.ObjectId(query.createdBy);
+      }
+    } else if (userId) {
+      // Non-admin users can see tasks they created or tasks assigned to them.
+      filter.$or = [{ assignedTo: userId }, { createdBy: userId }];
     }
 
-    // tasks created by the current user
-    if (user?.role !== 'admin') {
-      filter.createdBy = new Types.ObjectId(user?._id);
-    }
-
-    const sortField = query.sortBy || 'dueDate';
+    const sortFieldMap = {
+      createdAt: 'createdAt',
+      dueDate: 'dueDate',
+      priority: 'priority',
+    } as const;
+    
+    const sortField = sortFieldMap[query.sortBy || 'dueDate'];
     const sortOrder = query.sortOrder === 'desc' ? -1 : 1;
 
     const page = query.page || 1;
     const limit = query.limit || 10;
     const skip = (page - 1) * limit;
+
+    this.logger.log(
+      {
+        data: {
+          userId: user?._id,
+          role: user?.role,
+          query,
+          filter,
+          page,
+          limit,
+          sortBy: sortField,
+          sortOrder,
+        },
+      },
+      'Fetching paginated tasks',
+    );
 
     const [result] = await this.taskRepository.aggregateTask([
       { $match: filter },
