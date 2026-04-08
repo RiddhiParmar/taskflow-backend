@@ -5,12 +5,9 @@ export default registerAs(ENV_NAMESPACES.SERVER, () => {
     port: parseInt(process.env.PORT as string, 10) || 8080,
     host: process.env.HOST || '0.0.0.0',
     environment: process.env.NODE_ENV || NODE_ENV.DEVELOPMENT,
-    frontendBaseUrl: process.env.FRONTEND_BASEURL || 'http://localhost:4500',
+    frontendBaseUrl: process.env.FRONTEND_BASEURL || 'http://localhost:5173',
     cors: {
-      origin: '*',
-      //  process.env?.CORS_ORIGIN?.split(',') || [
-      //   process.env.FRONTEND_BASEURL,
-      // ],
+      origin:  [process.env.FRONTEND_BASEURL],
       allowedHeaders: [
         'Origin',
         'X-Requested-With',

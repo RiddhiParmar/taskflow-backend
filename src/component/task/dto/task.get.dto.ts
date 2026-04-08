@@ -41,8 +41,12 @@ export class GetPaginatedTaskParamDto {
   assignedTo?: string;
 
   @IsOptional()
-  @IsIn(['priority', 'dueDate'])
-  sortBy?: 'priority' | 'dueDate';
+  @IsMongoId()
+  createdBy?: string;
+
+  @IsOptional()
+  @IsIn(['priority', 'dueDate', 'createdAt', 'createdBy'])
+  sortBy?: 'priority' | 'dueDate' | 'createdAt' | 'createdBy';
 
   @IsOptional()
   @IsIn(['asc', 'desc'])
